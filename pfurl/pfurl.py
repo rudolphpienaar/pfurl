@@ -602,7 +602,7 @@ class Pfurl():
         for k,v in kwargs.items():
             if k == 'd_msg':    d_msg   = v
 
-        pudb.set_trace()
+        # pudb.set_trace()
         str_response = self.pull_core(msg = d_msg)
 
         # The length of str_response check is probably not the best way to try
@@ -712,10 +712,10 @@ class Pfurl():
         # Pull the actual data into a dictionary holder
         d_pull                  = self.pullPath_core()
         d_ret['remoteServer']   = d_pull
-        str_response            = d_pull['response']['response']
+        str_response            = d_pull['response']['data']
         d_pull['response']      = '<truncated>'
 
-        pudb.set_trace()
+        # pudb.set_trace()
 
         if not d_pull['status']:
             if 'stdout' in d_pull:
@@ -1035,7 +1035,7 @@ class Pfurl():
         """
         d_ret   = {
                     'status':       False,
-                    'response':     ''
+                    'data':         ''
                 }
         self.c.setopt(pycurl.HTTPHEADER, self.HTTPheaders)
         try:
@@ -1046,15 +1046,15 @@ class Pfurl():
                             str_exception, 
                             comms = 'error')
             d_ret['status']     = False
-            d_ret['response']   = self.buffer.getvalue()
+            d_ret['data']       = self.buffer.getvalue()
             d_ret['exception']  = str_exception
         try:
-            str_response        = self.buffer.getvalue().decode()
+            str_data            = self.buffer.getvalue().decode()
             d_ret['status']     = True
-            d_ret['response']   = str_response
+            d_ret['data']       = str_data
         except:
             try:
-                d_ret['response']   = self.buffer.getvalue()
+                d_ret['data']       = self.buffer.getvalue()
                 d_ret['status']     = True
             except Exception as e:
                 str_exception       = str(e)
@@ -1071,7 +1071,7 @@ class Pfurl():
         d_ret   = {'status':    False}
 
         if d_curlResponse['status']:
-            response    = d_curlResponse['response']
+            response    = d_curlResponse['data']
             if isinstance(response, dict):
                 self.dp.qprint(
                         "Response from curl:\n%s" % json.dumps(response, indent = 4), 
