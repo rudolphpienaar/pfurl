@@ -968,7 +968,7 @@ class Pfurl():
         """
         Configure curl for file tranmission via a FORM
         """
-        self.HTTPheaders.append('mode: file')
+        self.HTTPheaders.append('Mode: file')
         self.dp.qprint("Building form-based multi-part message...", 
                         level = 1, 
                         comms ='status')
@@ -992,7 +992,7 @@ class Pfurl():
                         comms = 'status')
 
     def curl_controlMode_set(self, str_msg):
-        self.HTTPheaders.append('mode: control')
+        self.HTTPheaders.append('Mode: control')
         self.dp.qprint("Sending control message...", 
                         level = 1, 
                         comms = 'status')
