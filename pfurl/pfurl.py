@@ -536,54 +536,12 @@ class Pfurl():
             if k == 'msg':      d_msg       = v
             if k == 'verbose':  verbose     = v
 
-        # pudb.set_trace()
-
-        # response            = io.BytesIO()
-
         if len(d_msg):
-            # d_meta              = d_msg['meta']
             str_query           = '?%s' % urllib.parse.urlencode(d_msg)
         
-        self.curl_init(verbose     = verbose)
+        self.curl_init(verbose  = verbose)
         self.curl_URL_resolveAndSet(d_msg, str_ip, str_port, str_query)        
-
-        # str_URL = "%s://%s:%s%s%s" % (self.str_protocol, str_ip, str_port, self.str_URL, str_query)
-        # self.dp.qprint(str_URL,
-        #             comms  = 'tx')
-
-
-        # c = pycurl.Curl()
-        # c.setopt(c.URL, str_URL)
-        # pudb.set_trace()
-
         self.curl_unverifiedCerts_checkAndSet()
-        # if self.b_unverifiedCerts:
-        #     self.dp.qprint("Making an insecure connection with trusted host")
-        #     c.setopt(pycurl.SSL_VERIFYPEER, 0)   
-        #     c.setopt(pycurl.SSL_VERIFYHOST, 0)
-        # if verbose: c.setopt(c.VERBOSE, 1)
-        # c.setopt(c.FOLLOWLOCATION,  1)
-        # c.setopt(c.WRITEFUNCTION,   response.write)
-        # if len(self.str_auth):
-        #     self.dp.qprint("Using user:password authentication <%s>" % 
-        #                     self.str_auth)
-        #     c.setopt(c.USERPWD, self.str_auth)
-        # elif len(self.str_authToken):
-        #     self.dp.qprint("Using token-based authorization <%s>" % 
-        #                     self.str_authToken)
-        #     header = 'Authorization: bearer %s' % self.str_authToken
-
-        # self.curl_doCall()
-        #     c.setopt(pycurl.HTTPHEADER, [header])
-        # self.dp.qprint("Waiting for PULL response...", level = 1, comms ='status')
-        # c.perform()
-        # c.close()
-        # try:
-        #     str_response        = response.getvalue().decode()
-        # except:
-        #     str_response        = response.getvalue()
-
-        # return str_response
 
         d_ret               = self.curl_doCall()
         self.dp.qprint('Incoming transmission received, length = %s' % 
@@ -599,62 +557,54 @@ class Pfurl():
         """
 
         d_msg       = self.d_msg
+        d_ret       = {}
         for k,v in kwargs.items():
             if k == 'd_msg':    d_msg   = v
 
-        # pudb.set_trace()
         str_response = self.pull_core(msg = d_msg)
 
-        # The length of str_response check is probably not the best way to try
-        # and flag errors. 
-        # CHECK HERE FIRST IN DEBUGGING IF THINGS GO SOUTH!!
-        if len(str_response) < 600:
-            # It's possible an error occurred for the response to be so short.
-            # Try and json load, and examine for 'status' field.
-            b_response      = False
-            b_status        = False
-            if isinstance(str_response, dict):
-                # if self.b_httpResponseBodyParse:
-                #     d_response  = json.loads(
-                #         self.httpResponse_bodyParse(response = str_response)
-                #     )
-                #     d_response  = json.loads(str_response)
-                # else:
-                #     d_response  = str_response
-                d_response  = str_response
-                b_response  = True
-                b_status    = d_response['status']
-                str_error   = d_response
-            else:
-                str_error   = str_response
-            if not b_status or 'Network Error' in str_response:
-                self.dp.qprint('Some error occurred at remote location:',
-                            level = 1, comms ='error')
-                return {'status':       False,
-                        'msg':          'PULL unsuccessful',
-                        'response':     str_error,
-                        'timestamp':    '%s' % datetime.datetime.now(),
-                        'size':         "{:,}".format(len(str_response))}
-            else:
-                return {'status':       d_response['status'],
-                        'msg':          'PULL successful',
-                        'response':     d_response,
-                        'timestamp':    '%s' % datetime.datetime.now(),
-                        'size':         "{:,}".format(len(str_response))}
+        self.dp.qprint(
+            "Received "                         + 
+            Colors.YELLOW                       + 
+            "{:,}".format(len(str_response))    +
+            Colors.PURPLE                       + 
+            " bytes...",
+            level = 1, 
+            comms = 'status'
+        )
 
-        self.dp.qprint("Received "                      + 
-                    Colors.YELLOW                       + 
-                    "{:,}".format(len(str_response))    +
-                    Colors.PURPLE                       + 
-                    " bytes...",
-                    level = 1, 
-                    comms ='status')
+        # # The length of str_response check is probably not the best way to try
+        # # and flag errors. 
+        # # CHECK HERE FIRST IN DEBUGGING IF THINGS GO SOUTH!!
+        # if len(str_response) < 600:
+        #     # It's possible an error occurred for the response to be so short.
+        #     # Try and json load, and examine for 'status' field.
+        #     # Note that the 'len' is not the size in bytes necessarily! If the
+        #     # str_response is actually a dictionary, the 'len' will be number of
+        #     # keys. 
+        b_status        = False
+        if isinstance(str_response, dict):
+            d_response  = str_response
+            b_status    = d_response['status']
+            str_error   = d_response
+        else:
+            str_error   = str_response
+        if not b_status or 'Network Error' in str_response:
+            self.dp.qprint('Some error occurred at remote location:',
+                        level = 1, comms ='error')
+            d_ret = {'status':       False,
+                    'msg':          'PULL unsuccessful',
+                    'response':     str_error,
+                    'timestamp':    '%s' % datetime.datetime.now(),
+                    'size':         "{:,}".format(len(str_response))}
+        else:
+            d_ret = {'status':       d_response['status'],
+                    'msg':          'PULL successful',
+                    'response':     d_response,
+                    'timestamp':    '%s' % datetime.datetime.now(),
+                    'size':         "{:,}".format(len(str_response))}
 
-        return {'status':       True,
-                'msg':          'PULL successful',
-                'response':     str_response,
-                'timestamp':    '%s' % datetime.datetime.now(),
-                'size':         "{:,}".format(len(str_response))}
+        return d_ret
 
     def pullPath_compress(self, d_msg, **kwargs):
         """
