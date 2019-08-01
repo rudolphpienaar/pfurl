@@ -1,8 +1,27 @@
 #!/usr/bin/env python3
 
 '''
+        __            _ 
+       / _|          | |
+ _ __ | |_ _   _ _ __| |
+| '_ \|  _| | | | '__| |
+| |_) | | | |_| | |  | |
+| .__/|_|  \__,_|_|  |_|
+| |                     
+|_|                     
 
-pfurl - path-file url module
+                            Process-File-over-URL
+
+    'pfurl' sends REST conforming commands and data to remote services, 
+    similar in some ways to the well-known CLI tool, 'curl' or the Python 
+    tool, 'httpie'.
+    
+    'pfurl' not only sends curl type payloads, but can also zip/unzip 
+    entire directories of files for transmission and reception.
+    
+    'pfurl' is designed to be part of the ChRIS framework but can also be
+    used in similar use cases to 'curl' or 'httpie'.
+
 
 '''
 
@@ -39,32 +58,6 @@ Gb_startFromCLI             = False
 class Pfurl():
 
     ''' Represents an example client. '''
-
-    # def qprint(self, msg, **kwargs):
-
-    #     str_comms  = "status"
-    #     for k,v in kwargs.items():
-    #         if k == 'comms':    str_comms  = v
-
-    #     if self.b_useDebug:
-    #         write   = self.debug
-    #     else:
-    #         write   = print
-
-    #     str_caller  = inspect.stack()[1][3]
-
-    #     if not self.b_quiet:
-    #         if not self.b_useDebug:
-    #             if str_comms == 'status':   write(Colors.PURPLE,    end="")
-    #             if str_comms == 'error':    write(Colors.RED,       end="")
-    #             if str_comms == "tx":       write(Colors.YELLOW + "---->")
-    #             if str_comms == "rx":       write(Colors.GREEN  + "<----")
-    #             write('%s' % datetime.datetime.now() + " ",       end="")
-    #         write(' | ' + os.path.basename(__file__) + ':' +  self.__name__ + "." + str_caller + '() | ' + msg)
-    #         if not self.b_useDebug:
-    #             if str_comms == "tx":       write(Colors.YELLOW + "---->")
-    #             if str_comms == "rx":       write(Colors.GREEN  + "<----")
-    #             write(Colors.NO_COLOUR, end="")
 
     def col2_print(self, str_left, str_right):
         print(Colors.WHITE +
@@ -521,7 +514,7 @@ class Pfurl():
 
     def pull_core(self, **kwargs):
         """
-        Just the core of the pycurl logic.
+        Core method that interacts with the pycurl module
         """
 
         str_ip              = self.str_ip
@@ -553,7 +546,7 @@ class Pfurl():
 
     def pullPath_core(self, **kwargs):
         """
-        Just the core of the pycurl logic.
+        The core 'path' pulling related processing
         """
 
         d_msg       = self.d_msg
@@ -573,15 +566,6 @@ class Pfurl():
             comms = 'status'
         )
 
-        # # The length of str_response check is probably not the best way to try
-        # # and flag errors. 
-        # # CHECK HERE FIRST IN DEBUGGING IF THINGS GO SOUTH!!
-        # if len(str_response) < 600:
-        #     # It's possible an error occurred for the response to be so short.
-        #     # Try and json load, and examine for 'status' field.
-        #     # Note that the 'len' is not the size in bytes necessarily! If the
-        #     # str_response is actually a dictionary, the 'len' will be number of
-        #     # keys. 
         b_status        = False
         if isinstance(str_response, dict):
             d_response  = str_response
@@ -592,17 +576,21 @@ class Pfurl():
         if not b_status or 'Network Error' in str_response:
             self.dp.qprint('Some error occurred at remote location:',
                         level = 1, comms ='error')
-            d_ret = {'status':       False,
+            d_ret = {
+                    'status':       False,
                     'msg':          'PULL unsuccessful',
                     'response':     str_error,
                     'timestamp':    '%s' % datetime.datetime.now(),
-                    'size':         "{:,}".format(len(str_response))}
+                    'size':         "{:,}".format(len(str_response))
+                    }
         else:
-            d_ret = {'status':       d_response['status'],
+            d_ret = {
+                    'status':       d_response['status'],
                     'msg':          'PULL successful',
                     'response':     d_response,
                     'timestamp':    '%s' % datetime.datetime.now(),
-                    'size':         "{:,}".format(len(str_response))}
+                    'size':         "{:,}".format(len(str_response))
+                    }
 
         return d_ret
 
